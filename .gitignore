@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+logs/combined.log
+logs/error.log
+logs/warn.log
