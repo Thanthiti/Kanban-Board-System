@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  password   String
+  taskUsers  TaskUser[]
+  boardUsers BoardUser[]
+}
+
+model Board {
+  id      Int      @id @default(autoincrement())
+  name    String
+  owner_id Int
+  columns Column[]
+  members BoardUser[]
+}
+
+model BoardUser {
+  board_id Int
+  user_id  Int
+  role     Role
+  board    Board @relation(fields: [board_id], references: [id])
+  user     User  @relation(fields: [user_id], references: [id])
+  @@id([board_id, user_id])
+}
+
+model Column {
+  id       Int     @id @default(autoincrement())
+  name     String
+  board_id Int
+  position Int       
+  board    Board   @relation(fields: [board_id], references: [id])
+  tasks    Task[]
+}
+
+model Task {
+  id        Int       @id @default(autoincrement())
+  title     String
+  description String?
+  column_id Int
+  position  Int       
+  column    Column    @relation(fields: [column_id], references: [id])
+  assignees TaskUser[]
+  tags      TaskTag[]
+}
+
+model TaskUser {
+  task_id Int
+  user_id Int
+  task    Task @relation(fields: [task_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
+  @@id([task_id, user_id])
+}
+
+model Tag {
+  id      Int       @id @default(autoincrement())
+  name    String
+  taskTags TaskTag[]
+}
+
+model TaskTag {
+  task_id Int
+  tag_id  Int
+  task    Task @relation(fields: [task_id], references: [id])
+  tag     Tag  @relation(fields: [tag_id], references: [id])
+  @@id([task_id, tag_id])
+}
+
+enum Role {
+  OWNER
+  MEMBER
+}
