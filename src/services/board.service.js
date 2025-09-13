@@ -118,7 +118,7 @@ async function getMemberBoards(userId) {
 // Get board by id detail column and task
 async function getBoardbyId(boardId){
     try {
-        const board = await boardRepository.findBoardbyId(boardId);
+        const board = await boardRepository.findById(boardId);
         if (!board) {
             logger.error(`Board retrieval failed - Board not found - ${boardId}`);
             throw new Error("Board not found");

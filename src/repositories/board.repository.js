@@ -26,6 +26,27 @@ class BoardRepository {
     return board;
   }
 
+  // find member of a board
+  async findBoardUser(boardId, userId) {
+    return await prisma.boardUser.findUnique({
+      where: { board_id_user_id: { board_id: boardId, user_id: userId } },
+    });
+  }
+
+  // Find board by ID  detail column and task
+  async findById(boardId) {
+    return await prisma.board.findUnique({
+        where: { id: boardId },
+        include: {
+            columns: {
+                include: {
+                    tasks: true 
+                }
+            }
+        }
+    });
+  }
+
   // Add member to board
   async addMember(board_id, user_id, role) {
     const board = await prisma.board.findUnique({ where: { id: board_id } });
@@ -40,15 +61,12 @@ class BoardRepository {
       throw new Error("User not found");
     }
 
-    const existingMember = await prisma.boardUser.findMany({
-      where: { board_id, user_id },
-    });
+    const existingMember = await this.findBoardUser(board_id, user_id);
 
-    if (existingMember.length > 0) {
+    if (existingMember) {
       logger.error(`Add member failed - User already exists - ${user_id}`);
       throw new Error("User already exists");
     }
-
 
     const member = await prisma.boardUser.create({
       data: { board_id, user_id, role },
@@ -115,10 +133,6 @@ class BoardRepository {
     });
   }
 
-  // Find board by ID
-  async findById(id) {
-    return await prisma.board.findUnique({ where: { id } });
-  }
 
   // Update board
   async updateBoard(id, data) {
@@ -135,19 +149,13 @@ class BoardRepository {
 
   // Delete board
   async deleteBoard(id) {
-    const board = await this.findById(id);
-    if (!board) {
-      logger.error(`Board deletion failed - Board not found - ${id}`);
-      throw new Error("Board not found");
-    }
-
-    await prisma.boardUser.deleteMany({
-      where: { board_id: id },
+    return await prisma.$transaction(async (prisma) => {
+      await prisma.column.deleteMany({ where: { board_id: id } });
+      await prisma.boardUser.deleteMany({ where: { board_id: id } });
+      const deletedBoard = await prisma.board.delete({ where: { id } });
+      logger.info(`Board deleted successfully - ${id}`);
+      return deletedBoard;
     });
-
-    const deletedBoard = await prisma.board.delete({ where: { id } });
-    logger.info(`Board deleted successfully - ${id}`);
-    return deletedBoard;
   }
 }
 
