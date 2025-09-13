@@ -21,63 +21,81 @@ model User {
   password   String
   taskUsers  TaskUser[]
   boardUsers BoardUser[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model Board {
-  id      Int      @id @default(autoincrement())
-  name    String
-  owner_id Int
-  columns Column[]
-  members BoardUser[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  owner_id  Int
+  columns   Column[]
+  members   BoardUser[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model BoardUser {
-  board_id Int
-  user_id  Int
-  role     Role
-  board    Board @relation(fields: [board_id], references: [id])
-  user     User  @relation(fields: [user_id], references: [id])
+  board_id  Int
+  user_id   Int
+  role      Role
+  board     Board @relation(fields: [board_id], references: [id])
+  user      User  @relation(fields: [user_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@id([board_id, user_id])
 }
 
 model Column {
-  id       Int     @id @default(autoincrement())
-  name     String
-  board_id Int   
-  board    Board   @relation(fields: [board_id], references: [id])
-  tasks    Task[]
+  id        Int     @id @default(autoincrement())
+  name      String
+  board_id  Int   
+  board     Board   @relation(fields: [board_id], references: [id])
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Task {
-  id        Int       @id @default(autoincrement())
-  title     String
+  id          Int       @id @default(autoincrement())
+  title       String
   description String?
-  column_id Int
-  position  Int       
-  column    Column    @relation(fields: [column_id], references: [id])
-  assignees TaskUser[]
-  tags      TaskTag[]
+  column_id   Int
+  position    Int       
+  dueDate     DateTime?
+  completedAt DateTime?
+  column      Column    @relation(fields: [column_id], references: [id])
+  assignees   TaskUser[]
+  tags        TaskTag[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model TaskUser {
-  task_id Int
-  user_id Int
-  task    Task @relation(fields: [task_id], references: [id])
-  user    User @relation(fields: [user_id], references: [id])
+  task_id   Int
+  user_id   Int   
+  task      Task @relation(fields: [task_id], references: [id])
+  user      User @relation(fields: [user_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@id([task_id, user_id])
 }
 
 model Tag {
-  id      Int       @id @default(autoincrement())
-  name    String
-  taskTags TaskTag[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  taskTags  TaskTag[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model TaskTag {
-  task_id Int
-  tag_id  Int
-  task    Task @relation(fields: [task_id], references: [id])
-  tag     Tag  @relation(fields: [tag_id], references: [id])
+  task_id   Int
+  tag_id    Int
+  task      Task @relation(fields: [task_id], references: [id])
+  tag       Tag  @relation(fields: [tag_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   @@id([task_id, tag_id])
 }
 

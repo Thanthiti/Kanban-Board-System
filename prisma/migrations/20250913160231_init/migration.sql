@@ -7,6 +7,8 @@ CREATE TABLE "public"."User" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -16,6 +18,8 @@ CREATE TABLE "public"."Board" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "owner_id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Board_pkey" PRIMARY KEY ("id")
 );
@@ -25,6 +29,8 @@ CREATE TABLE "public"."BoardUser" (
     "board_id" INTEGER NOT NULL,
     "user_id" INTEGER NOT NULL,
     "role" "public"."Role" NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "BoardUser_pkey" PRIMARY KEY ("board_id","user_id")
 );
@@ -34,6 +40,8 @@ CREATE TABLE "public"."Column" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "board_id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Column_pkey" PRIMARY KEY ("id")
 );
@@ -45,6 +53,10 @@ CREATE TABLE "public"."Task" (
     "description" TEXT,
     "column_id" INTEGER NOT NULL,
     "position" INTEGER NOT NULL,
+    "dueDate" TIMESTAMP(3),
+    "completedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +65,8 @@ CREATE TABLE "public"."Task" (
 CREATE TABLE "public"."TaskUser" (
     "task_id" INTEGER NOT NULL,
     "user_id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "TaskUser_pkey" PRIMARY KEY ("task_id","user_id")
 );
@@ -61,6 +75,8 @@ CREATE TABLE "public"."TaskUser" (
 CREATE TABLE "public"."Tag" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Tag_pkey" PRIMARY KEY ("id")
 );
@@ -69,6 +85,8 @@ CREATE TABLE "public"."Tag" (
 CREATE TABLE "public"."TaskTag" (
     "task_id" INTEGER NOT NULL,
     "tag_id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "TaskTag_pkey" PRIMARY KEY ("task_id","tag_id")
 );

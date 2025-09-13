@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const loggerMiddleware = require("./api/middlewares/logger.middleware");
 const userRouter = require("./api/routes/user.routes");
 const boardRouter = require("./api/routes/board.route");
+const columnRouter = require("./api/routes/column.route");
 const authMiddleware = require("./api/middlewares/auth.middleware");
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/users", userRouter);
 app.use("/api/boards", boardRouter);
+app.use("/api/columns", columnRouter);
 
 app.use(authMiddleware);
 
