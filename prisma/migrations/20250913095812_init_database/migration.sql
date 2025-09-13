@@ -34,7 +34,6 @@ CREATE TABLE "public"."Column" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "board_id" INTEGER NOT NULL,
-    "position" INTEGER NOT NULL,
 
     CONSTRAINT "Column_pkey" PRIMARY KEY ("id")
 );

@@ -43,8 +43,7 @@ model BoardUser {
 model Column {
   id       Int     @id @default(autoincrement())
   name     String
-  board_id Int
-  position Int       
+  board_id Int   
   board    Board   @relation(fields: [board_id], references: [id])
   tasks    Task[]
 }
