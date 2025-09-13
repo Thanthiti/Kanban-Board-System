@@ -14,6 +14,7 @@ const boardService = {
     deleteBoard
 };
 
+// Create a new board
 async function createBoard(name, owner_id) {
     try {
         const board = await boardRepository.createBoard(name, owner_id);
@@ -25,6 +26,7 @@ async function createBoard(name, owner_id) {
     }
 }
 
+// Add member to board 
 async function addMember(board_id,owner_id, user_id) {
     try {
         user_id = parseInt(user_id);
@@ -65,6 +67,7 @@ async function addMember(board_id,owner_id, user_id) {
     
 }
 
+// Get boards that user owns
 async function getOwnerBoards(userId){
     try{
         userId = parseInt(userId);
@@ -87,7 +90,7 @@ async function getOwnerBoards(userId){
         throw error;
     }
 }
-
+// Get boards that user belongs to
 async function getMemberBoards(userId) {
     try{
         userId = parseInt(userId);
@@ -112,24 +115,24 @@ async function getMemberBoards(userId) {
     }
 }
 
-async function getBoardbyId(id){
+// Get board by id detail column and task
+async function getBoardbyId(boardId){
     try {
-        id = parseInt(id);
-        const board = await boardRepository.findById(id);
+        const board = await boardRepository.findBoardbyId(boardId);
         if (!board) {
-            logger.error(`Board retrieval failed - Board not found - ${id}`);
+            logger.error(`Board retrieval failed - Board not found - ${boardId}`);
             throw new Error("Board not found");
         }
-        logger.info(`Board retrieved successfully - ${id}`);
+        logger.info(`Board retrieved successfully - ${boardId}`);
         return board;
     }
     catch (error) {
         logger.error(`Board creation failed - ${error.message}`);
         throw error;
     }
-    
 }
 
+// Get all boards user belongs to (owner + member) 
 async function getAllBoards(userId) {
     try {
         if (!userId) {
@@ -149,9 +152,9 @@ async function getAllBoards(userId) {
     }
 }
 
+// Get all members of a board
 async function getMembers(boardId){
     try {
-    boardId = parseInt(boardId);
     if (!boardId) {
         logger.error(`Board retrieval failed - Board not found - ${boardId}`);
         throw new Error("Board not found");
@@ -164,27 +167,27 @@ async function getMembers(boardId){
      }
 
     logger.info(`Board retrieved successfully - ${boardId}`);
-    return  member;
-    }catch{
+    return  members;
+    }catch (error){
         logger.error(`Board retrieval failed - ${error.message}`);
         throw error;
     }
 }
 
-async function updateBoard(id, data, owner_id) {
+// Update board
+async function updateBoard(boardId, owner_id, name ) {
     try {
-        id = parseInt(id);
-        const boardExists = await boardRepository.findById(id);
+        const boardExists = await boardRepository.findById(boardId);
         if (!boardExists) {
-            logger.error(`Board update failed - Board not found - ${id}`);
+            logger.error(`Board update failed - Board not found - ${boardId}`);
             throw new Error("Board not found");
         }
 
         if (boardExists.owner_id !== owner_id) {
-            logger.error(`Board update failed - Unauthorized - ${id}`);
+            logger.error(`Board update failed - Unauthorized - ${boardId}`);
             throw new Error("Unauthorized");
         }
-        const board = await boardRepository.updateBoard(id, data);
+        const board = await boardRepository.updateBoard(boardId, { name });
         logger.info(`Board updated successfully - ${board.id}`);
         return board;
     } catch (error) {
@@ -193,27 +196,28 @@ async function updateBoard(id, data, owner_id) {
     }
 }
 
-async function deleteBoard(id, owner_id) {
+// Delete board
+async function deleteBoard(boardId, owner_id) {
     try {
-        id = parseInt(id);  
-        const boardExists = await boardRepository.findById(id);
+        const boardExists = await boardRepository.findById(boardId);
         if (!boardExists) {
-            logger.error(`Board deletion failed - Board not found - ${id}`);
+            logger.error(`Board deletion failed - Board not found - ${boardId}`);
             throw new Error("Board not found");
         }
 
         if (boardExists.owner_id !== owner_id) {
-            logger.error(`Board deletion failed - Unauthorized - ${id}`);
+            logger.error(`Board deletion failed - Unauthorized - ${boardId}`);
             throw new Error("Unauthorized");
         }
         
-        await boardRepository.deleteBoard(id);
-        logger.info(`Board deleted successfully - ${id}`);
+        await boardRepository.deleteBoard(boardId);
+        logger.info(`Board deleted successfully - ${boardId}`);
     } catch (error) {
         logger.error(`Board deletion failed - ${error.message}`);
         throw error;
     }
 }
+
 
 module.exports = boardService
 
