@@ -2,8 +2,8 @@ const taskRepository = require("../repositories/task.repository");
 const columnRepository = require("../repositories/column.repository");
 const logger = require("../config/logger");
 const boardRepository = require("../repositories/board.repository");
-const { error } = require("winston");
-const { connect } = require("../api/routes/task.route");
+const prisma = require("../config/db");
+
 const taskService = {
   createTask,
   updateTask,
@@ -15,6 +15,7 @@ const taskService = {
 
 async function checkTaskPermission(task_id, user_id, allowedRoles) {
   const task = await taskRepository.findUserRole(task_id, user_id);
+  
   if (!task) {
     logger.error(`Task creation failed - Task not found - ${task_id}`);
     throw new Error("Task not foundasd");
@@ -210,12 +211,29 @@ async function deleteTask(taskId, userId) {
 
 // Get task by id
 async function getTaskbyId(taskId, userId) {
-  await checkTaskPermission(taskId, userId, ["owner", "assignee"]);
+  
   const task = await taskRepository.findById(taskId);
   if (!task){
     logger.error(`Task not found - ${taskId}`);
     throw new Error("Task not found");
   } 
+    const isAssignee = task.assignees.some((a) => a.user_id === userId);
+    const column = await prisma.column.findUnique({
+      where: { id: task.column_id },
+      select: { board_id: true },
+    });
+
+    const board = await prisma.board.findUnique({
+      where: { id: column.board_id },
+      select: { owner_id: true },
+    });
+
+    const isOwner = board.owner_id === userId;
+
+    if (!isAssignee && !isOwner) {
+      logger.error(`User ${userId} has no permission to view Task ${taskId}`);
+      throw new Error("Forbidden: You cannot view this task");
+    }
 
   logger.info(`Task found successfully - ${task.id}`);
   return task

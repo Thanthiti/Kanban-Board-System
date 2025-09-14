@@ -1,5 +1,4 @@
 const prisma = require("../config/db");
-const logger = require("../config/logger");
 
 class TaskRepository {
   // Create a new task
@@ -62,14 +61,37 @@ class TaskRepository {
             tag_id: true,
             tag: { select: { id: true, name: true } },
           },
-        }
+        },
       },
     });
   }
 
+  // find task with userID 
+  async findTaskUser(taskId, userId) {
+    const taskWithUser = await prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        assignees: {
+          where: { user_id: userId },
+        },
+        column: {
+          include: {
+            board: true,
+          },
+        },
+      },
+    });
+
+    if (!taskWithUser) return null;
+
+    const taskUser = taskWithUser.assignees[0] || null;
+
+    return { task: taskWithUser, taskUser };
+  }
+
   // Find User by role
   async findUserRole(task_id, user_id) {
-    
+    console.log(task_id, user_id)
     return prisma.taskUser.findUnique({
       where: {
         task_id_user_id: { task_id, user_id },
@@ -99,7 +121,7 @@ class TaskRepository {
   }
 
   //  Update position of tasks
- async findByColumn(columnId) {
+  async findByColumn(columnId) {
     return prisma.task.findMany({
       where: { column_id: columnId },
       orderBy: { position: "asc" },
@@ -139,36 +161,33 @@ class TaskRepository {
   }
 
   //  Find Task by id
-  async findById(taskId) {
-    return prisma.task.findUnique({
-      where: { id: taskId },
-      include: {
-        column: {
-          include: { board: true },
-        },
-        assignees: {
-          select: {
-            user_id: true,
-            role: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
+async findById(taskId) {
+  return prisma.task.findUnique({
+    where: { id: taskId },
+    include: {
+      assignees: {
+        select: {
+          user_id: true,
+          role: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
             },
           },
         },
-        tags: {
-          select: {
-            task_id: true,
-            tag_id: true,
-            tag: { select: { id: true, name: true } },
-          },
+      },
+      tags: {
+        select: {
+          task_id: true,
+          tag_id: true,
+          tag: { select: { id: true, name: true } },
         },
       },
-    });
-  }
+    },
+  });
+}
 }
 
 module.exports = new TaskRepository();
