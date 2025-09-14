@@ -20,12 +20,13 @@ async function checkTaskPermission(task_id, user_id, allowedRoles) {
     logger.error(`Task creation failed - Task not found - ${task_id}`);
     throw new Error("Task not foundasd");
   }
-  if (!allowedRoles.includes(task.role)) {
+  if (!allowedRoles.includes(task.role.toLocaleLowerCase())) {
     logger.error(
       `Task creation failed - You are not part of this task - ${task_id}`
     );
     throw new Error("You are not part of this task");
   }
+  console.log(task.role);
   return task.role;
 }
 
@@ -133,7 +134,12 @@ async function createTask(
 
 // Update task
 async function updateTask(taskId, input, userId) {
+  
   try {
+    console.log(input);
+    console.log(userId);
+    console.log(taskId);
+    
     const role = await checkTaskPermission(taskId, userId, [
       "owner",
       "assignee",
@@ -141,7 +147,7 @@ async function updateTask(taskId, input, userId) {
 
     if (!role) throw new Error("You are not allowed to update this task");
 
-    if (role === "assignee") {
+    if (role.toLowerCase() === "assignee") {
       if (!input.tagIds) throw new Error("Assignees can only add tags");
       return taskRepository.update(taskId, {
         tags: {
@@ -153,17 +159,22 @@ async function updateTask(taskId, input, userId) {
       });
     }
 
-    if (role === "owner") {
+    if (role.toLowerCase() === "owner") {
       //Owner can do anything
       const { assigneeIds, tagIds, column_id, ...scalarData } = input;
       const updateData = { ...scalarData };
 
       if (column_id) updateData.column = { connect: { id: column_id } };
 
-      const task = await taskRepository.findById(taskId);
+      const task = await taskRepository.findById(taskId, {
+        include: { column: { select: { board_id: true } } },
+      });
+
+      if (!task) throw new Error("Task not found");
+      if (!task.column) throw new Error("Task column not found");
       const { validAssignees, invalidAssignees } = await validateAssignees(
         task.column.board_id,
-        assigneeIds,
+        assigneeIds || [],
         userId
       );
 

@@ -91,7 +91,6 @@ class TaskRepository {
 
   // Find User by role
   async findUserRole(task_id, user_id) {
-    console.log(task_id, user_id)
     return prisma.taskUser.findUnique({
       where: {
         task_id_user_id: { task_id, user_id },
@@ -106,6 +105,7 @@ class TaskRepository {
       where: { id: taskId },
       data,
       include: {
+        
         assignees: {
           include: { user: { select: { id: true, name: true, email: true } } },
         },
@@ -165,6 +165,20 @@ async findById(taskId) {
   return prisma.task.findUnique({
     where: { id: taskId },
     include: {
+      column: {
+        select: {
+          id: true,
+          name: true,
+          board_id: true,
+          board: {
+            select: {
+              id: true,
+              name: true,
+              owner_id: true,
+            },
+          },
+        },
+      },
       assignees: {
         select: {
           user_id: true,
