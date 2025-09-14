@@ -74,6 +74,7 @@ model Task {
 model TaskUser {
   task_id   Int
   user_id   Int   
+  role      String   @default("member") 
   task      Task @relation(fields: [task_id], references: [id])
   user      User @relation(fields: [user_id], references: [id])
   createdAt DateTime @default(now())
@@ -83,7 +84,7 @@ model TaskUser {
 
 model Tag {
   id        Int       @id @default(autoincrement())
-  name      String
+  name      String    @unique
   taskTags  TaskTag[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -65,6 +65,7 @@ CREATE TABLE "public"."Task" (
 CREATE TABLE "public"."TaskUser" (
     "task_id" INTEGER NOT NULL,
     "user_id" INTEGER NOT NULL,
+    "role" TEXT NOT NULL DEFAULT 'member',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -93,6 +94,9 @@ CREATE TABLE "public"."TaskTag" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Tag_name_key" ON "public"."Tag"("name");
 
 -- AddForeignKey
 ALTER TABLE "public"."BoardUser" ADD CONSTRAINT "BoardUser_board_id_fkey" FOREIGN KEY ("board_id") REFERENCES "public"."Board"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
