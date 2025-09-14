@@ -26,5 +26,17 @@ services:
     depends_on:
       - db
 
+  app:
+    build: .
+    container_name: kanban_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:3000"
+    depends_on:
+      - db
+    command: npm run start
+
 volumes:
   postgres_data:
