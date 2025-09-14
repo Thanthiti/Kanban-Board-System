@@ -17,20 +17,6 @@ class ColumnRepository {
     return column;
   }
 
-  // Find column by id
-  // async findColumnById(columnId, boardId) {
-  //   return await prisma.column.findUnique({
-  //     where: {
-  //       id: columnId,
-  //       board_id: boardId, // ป้องกัน column ผิด board
-  //     },
-  //     include: {
-  //       tasks: true, // ดึง tasks ใน column ด้วย
-  //     },
-  //   });
-  // }
-
-  // Find column by id to detail task
   async findById(columnId, boardId) {
     const column = await prisma.column.findUnique({
       where: {
@@ -82,6 +68,26 @@ class ColumnRepository {
       logger.error(`Column deletion failed - Column not found - ${column_id}`);
       throw new Error("Column not found");
     }
+    await prisma.taskUser.deleteMany({ 
+      where: {
+        task: {
+          column_id 
+        }
+    }}); 
+
+    await prisma.taskTag.deleteMany({ 
+      where: {
+        task: {
+          column_id 
+        }
+    }});
+
+    await prisma.task.deleteMany({ 
+      where: {
+        column_id 
+      }
+    });
+
     const deletedColumn = await prisma.column.delete({
       where: { id: column_id },
     });

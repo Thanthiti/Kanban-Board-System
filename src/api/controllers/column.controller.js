@@ -47,7 +47,7 @@ async function deleteColumnCTRL(req, res) {
         if (!boardId || !userId || !columnId)
             return res.status(400).json(errorResponse(400, "Bad request"));
 
-        const column = await columnService.deleteColumn(boardId,columnId,userId);
+        await columnService.deleteColumn(boardId,columnId,userId);
         res.status(200).json(successResponse({message:"Columns deleted successfully"}));
     }
     catch(error){

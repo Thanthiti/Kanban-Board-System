@@ -11,7 +11,7 @@ router.post("/", validate(createColumnSchema), authMiddleware, columnController.
 // Get all Column of a board
 router.get("/:boardId", authMiddleware, columnController.getColumnsCTRL);
 
-// Get Column by id
+// Get Column by id detail task
 router.get("/:columnId/:boardId", authMiddleware, columnController.getColumnbyIdCTRL);
 
 // Update Column
