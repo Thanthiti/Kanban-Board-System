@@ -27,23 +27,41 @@ class BoardRepository {
   }
 
   // find member of a board
-  async findBoardUser(boardId, userId) {
+  async findBoardUser(board_id, user_id) {
     return await prisma.boardUser.findUnique({
-      where: { board_id_user_id: { board_id: boardId, user_id: userId } },
+      where: { board_id_user_id: { board_id, user_id } },
     });
   }
 
   // Find board by ID  detail column and task
   async findById(boardId) {
     return await prisma.board.findUnique({
-        where: { id: boardId },
-        include: {
-            columns: {
-                include: {
-                    tasks: true 
-                }
-            }
-        }
+      where: { id: boardId },
+      include: {
+        columns: {
+          include: {
+            tasks: {
+              include: {
+                assignees: {
+                  select: {
+                    task_id: true,
+                    user_id: true,
+                    role: true,
+                    user: { select: { id: true, name: true, email: true } },
+                  },
+                },
+                tags: {
+                  select: {
+                    task_id: true,
+                    tag_id: true,
+                    tag: { select: { id: true, name: true } },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -107,6 +125,14 @@ class BoardRepository {
     });
   }
 
+  // Check if user is member of a board
+  async isBoardMember(board_id, user_id) {
+    const member = await prisma.boardUser.findUnique({
+      where: { board_id_user_id: { board_id, user_id } },
+    });
+    return !!member;
+  }
+
   // Get all boards user belongs to (owner + member)
   async getAllBoardsByUser(userId) {
     return await prisma.board.findMany({
@@ -133,7 +159,6 @@ class BoardRepository {
     });
   }
 
-
   // Update board
   async updateBoard(id, data) {
     const board = await this.findById(id);
@@ -148,14 +173,55 @@ class BoardRepository {
   }
 
   // Delete board
+
   async deleteBoard(id) {
-    return await prisma.$transaction(async (prisma) => {
-      await prisma.column.deleteMany({ where: { board_id: id } });
-      await prisma.boardUser.deleteMany({ where: { board_id: id } });
-      const deletedBoard = await prisma.board.delete({ where: { id } });
-      logger.info(`Board deleted successfully - ${id}`);
-      return deletedBoard;
+    // 1. ลบ TaskUser ที่ผูกกับ task ของ board นี้
+    
+    await prisma.taskUser.deleteMany({
+      where: {
+        task: {
+          column: {
+            board_id: id,
+          },
+        },
+      },
     });
+
+    // 2. ลบ TaskTag ที่ผูกกับ task ของ board นี้
+    await prisma.taskTag.deleteMany({
+      where: {
+        task: {
+          column: {
+            board_id: id,
+          },
+        },
+      },
+    });
+
+    // 3. ลบ Task เอง
+    await prisma.task.deleteMany({
+      where: {
+        column: {
+          board_id: id,
+        },
+      },
+    });
+
+    // 4. ลบ Column
+    await prisma.column.deleteMany({
+      where: { board_id: id },
+    });
+
+    // 5. ลบ BoardUser
+    await prisma.boardUser.deleteMany({ where: { board_id: id } });
+
+    // 6. ลบ Board
+    const deletedBoard = await prisma.board.delete({
+      where: { id },
+    });
+
+    logger.info(`Board deleted successfully - ${id}`);
+    return deletedBoard;
   }
 }
 
