@@ -94,10 +94,11 @@ async function getAllBoardsCTRL(req, res) {
 async function getBoardbyIdCTRL(req, res) {
   try{
     const boardId = Number(req.params.boardId);
-    if (!boardId)
+    const userId = req.user?.id;
+    if (!boardId || !userId)
       return res.status(400).json(errorResponse(400, "Bad request"));
 
-    const board = await boardService.getBoardbyId(boardId);
+    const board = await boardService.getBoardbyId(boardId, userId);
     res.status(200).json(successResponse(board));
   }
   catch(error){
@@ -109,10 +110,12 @@ async function getBoardbyIdCTRL(req, res) {
 async function getMembersCTRL(req, res) {
   try {
     const boardId =Number(req.params.boardId);
-    if (!boardId)
+    const userId = req.user?.id;
+
+    if (!boardId || !userId)
       return res.status(400).json(errorResponse(400, "Board not found"));
 
-    const members = await boardService.getMembers(boardId);
+    const members = await boardService.getMembers(boardId, userId);
     res.status(200).json(successResponse(members));
   } catch (error) {
     res.status(400).json(errorResponse(400, error.message));
@@ -126,7 +129,6 @@ async function updateBoardCTRL(req, res) {
     const { name } = req.body;
     const boardId = Number(req.params.boardId);
 
-    
     if (!boardId|| !name)
       return res.status(400).json(errorResponse(400, "Bad request"));
     
