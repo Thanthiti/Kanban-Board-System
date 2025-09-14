@@ -1,60 +1,43 @@
-User API - Quick Reference
-1️⃣ Register User
+## 1.Register User
 
 POST api/users/register
 
 Body Example:
-
+```json
 {
   "name": "John Doe",
   "email": "john@example.com",
   "password": "password123"
 }
+```
 
-
-Required Fields:
-
-name (string)
-
-email (string, must be unique)
-
-password (string)
-
-2️⃣ Login User
+### Required Fields:
+| Field    | Type   | Notes          |
+| -------- | ------ | -------------- |
+| name     | string | -              |
+| email    | string | Must be unique |
+| password | string | -              |
+## 2.Login User
 
 POST api/users/login
 
 Body Example:
-
+```json
 {
   "email": "john@example.com",
   "password": "password123"
 }
+```
+
+## Required Fields:
+
+| Field    | Type   | Notes          |
+| -------- | ------ | -------------- |
+| email    | string | - |
+| password | string | -              |
 
 
-Required Fields:
-
-email (string)
-
-password (string)
-
-Response Example:
-
-{
-  "success": true,
-  "data": {
-    "token": "jwt_token_here",
-    "user": {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com"
-    }
-  }
-}
-
-
-Notes:
+## Notes:
 
 Returns JWT token for authentication
-
 Password is never returned in the response
