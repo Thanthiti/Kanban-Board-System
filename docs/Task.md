@@ -87,7 +87,7 @@ Body Example:
 | Field      | Type    | Required | Description                                                      |
 | ---------- | ------- | -------- | ---------------------------------------------------------------- |
 | column\_id | integer | ✅        | ID of the column to move the task to                             |
-| position   | integer | ❌        | New position of the task in the column (default = last position) |
+| position   | integer | ✅        | New position of the task in the column (default = last position) |
 
 
 ### Permissions:
