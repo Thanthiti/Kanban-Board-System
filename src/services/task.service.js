@@ -26,7 +26,7 @@ async function checkTaskPermission(task_id, user_id, allowedRoles) {
     );
     throw new Error("You are not part of this task");
   }
-  console.log(task.role);
+  
   return task.role;
 }
 
@@ -80,7 +80,7 @@ async function createTask(
     const board = await boardRepository.findById(column.board_id);
     if (board.owner_id !== user_id) {
       logger.error(
-        `Task creation failed - Board not found - ${column.board_id}`
+        `Task creation failed - Only board owner can create task - ${column.board_id}`
       );
       throw new Error("Only board owner can create task");
     }
@@ -121,9 +121,7 @@ async function createTask(
     if (Array.isArray(tagIds) && tagIds.length > 0) {
       await taskRepository.addTaskTags(taskId, tagIds);
     }
-    const taskWithRelations = await taskRepository.findByIdWithRelations(
-      taskId
-    );
+    const taskWithRelations = await taskRepository.findByIdWithRelations(taskId);
 
     return taskWithRelations;
   } catch (error) {
@@ -136,9 +134,6 @@ async function createTask(
 async function updateTask(taskId, input, userId) {
   
   try {
-    console.log(input);
-    console.log(userId);
-    console.log(taskId);
     
     const role = await checkTaskPermission(taskId, userId, [
       "owner",
@@ -179,11 +174,7 @@ async function updateTask(taskId, input, userId) {
       );
 
       if (invalidAssignees.length > 0)
-        throw new Error(
-          `Invalid assignees (not board members): ${invalidAssignees.join(
-            ", "
-          )}`
-        );
+        throw new Error(`Invalid assignees (not board members): ${invalidAssignees.join(", ")}`);
       // If there are assigneeIds
       if (assigneeIds?.length) {
         // updateData.assignees will be an object with connectOrCreate property
@@ -216,12 +207,18 @@ async function updateTask(taskId, input, userId) {
 
 async function deleteTask(taskId, userId) {
   // Only owner can delete
-  await checkTaskPermission(taskId, userId, ["owner"]);
-  return taskRepository.delete(taskId);
+  try {
+    await checkTaskPermission(taskId, userId, ["owner"]);
+    return taskRepository.delete(taskId);
+  } catch (error) {
+    logger.error(`Task deletion failed - ${error.message}`);
+    throw error;
+  }
 }
 
 // Get task by id
 async function getTaskbyId(taskId, userId) {
+  try {
   
   const task = await taskRepository.findById(taskId);
   if (!task){
@@ -248,9 +245,14 @@ async function getTaskbyId(taskId, userId) {
 
   logger.info(`Task found successfully - ${task.id}`);
   return task
+  } catch (error) {
+    logger.error(`Task not found - ${error.message}`);
+    throw error;
+  }
 }
 
  async function moveTask(taskId, column_id, position) {
+  try{
   const task = await taskRepository.findById(taskId);
   if (!task) throw new Error("Task not found");
 
@@ -304,6 +306,10 @@ async function getTaskbyId(taskId, userId) {
   }
 
   return taskRepository.findById(taskId);
+} catch (error) {
+  logger.error(`Task move failed - ${error.message}`);
+  throw error;
+  }
 }
 
 module.exports = taskService;

@@ -66,31 +66,33 @@ class BoardRepository {
   }
 
   // Add member to board
-  async addMember(board_id, user_id, role) {
+  async addMember(board_id, member_id, role) {
     const board = await prisma.board.findUnique({ where: { id: board_id } });
     if (!board) {
       logger.error(`Add member failed - Board not found - ${board_id}`);
       throw new Error("Board not found");
     }
 
-    const user = await prisma.user.findUnique({ where: { id: user_id } });
+    const user = await prisma.user.findUnique({ where: { id: member_id } });
     if (!user) {
-      logger.error(`Add member failed - User not found - ${user_id}`);
+      logger.error(`Add member failed - User not found - ${member_id}`);
       throw new Error("User not found");
     }
 
-    const existingMember = await this.findBoardUser(board_id, user_id);
+    const existingMember = await this.findBoardUser(board_id, member_id);
 
     if (existingMember) {
-      logger.error(`Add member failed - User already exists - ${user_id}`);
+      logger.error(`Add member failed - User already exists - ${member_id}`);
       throw new Error("User already exists");
     }
 
     const member = await prisma.boardUser.create({
-      data: { board_id, user_id, role },
+      data: { board_id, user_id: member_id, role },
     });
 
-    logger.info(`Member added successfully - ${user_id} to board ${board_id}`);
+    logger.info(
+      `Member added successfully - ${member_id} to board ${board_id}`
+    );
     return member;
   }
 
@@ -98,27 +100,51 @@ class BoardRepository {
   async getOwnerBoards(userId) {
     return await prisma.board.findMany({
       where: { owner_id: userId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        owner_id: true,
         members: {
-          include: {
-            user: { select: { id: true, name: true, email: true } },
+          select: {
+            board_id: true,
+            user_id: true,
+            role: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
     });
   }
 
-  // Get boards user is member (excluding owner boards)
+  // Get member boards
   async getMemberBoards(userId) {
     return await prisma.board.findMany({
       where: {
         members: { some: { user_id: userId, role: "MEMBER" } },
         NOT: { owner_id: userId },
       },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        owner_id: true,
         members: {
-          include: {
-            user: { select: { id: true, name: true, email: true } },
+          select: {
+            board_id: true,
+            user_id: true,
+            role: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -176,7 +202,7 @@ class BoardRepository {
 
   async deleteBoard(id) {
     // 1. ลบ TaskUser ที่ผูกกับ task ของ board นี้
-    
+
     await prisma.taskUser.deleteMany({
       where: {
         task: {

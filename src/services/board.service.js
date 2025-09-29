@@ -37,7 +37,7 @@ async function addMember(board_id, owner_id, user_id) {
     // Check if the user has permission to add members
     const members = await boardRepository.getMembers(board_id);
     const ownerMembership = members.find((m) => m.user_id === owner_id);
-
+    
     if (!ownerMembership || ownerMembership.role !== "OWNER") {
       throw new Error("You do not have permission to add members");
     }
@@ -119,6 +119,10 @@ async function getMemberBoards(userId) {
 // Get board by id detail column and task
 async function getBoardbyId(boardId, userId) {
   try {
+    if (!boardId) {
+      logger.error(`Board retrieval failed - Board not found - ${boardId}`);
+      throw new Error("Board not found");
+    }
     const board = await boardRepository.findById(boardId);
     if (!board) {
       logger.error(`Board retrieval failed - Board not found - ${boardId}`);
@@ -127,7 +131,7 @@ async function getBoardbyId(boardId, userId) {
     
     const isOwner = board.owner_id === userId;
     if (!isOwner) {
-      logger.error(`Board retrieval failed - Unauthorized - ${boardId}`);
+      logger.error(`Board retrieval failed - Unauthorized  - ${boardId}`);
       throw new Error("Unauthorized");
     }
     
@@ -205,7 +209,7 @@ async function updateBoard(boardId, owner_id, name) {
       logger.error(`Board update failed - Board not found - ${boardId}`);
       throw new Error("Board not found");
     }
-
+    
     if (boardExists.owner_id !== owner_id) {
       logger.error(`Board update failed - Unauthorized - ${boardId}`);
       throw new Error("Unauthorized");
