@@ -1,38 +1,37 @@
-Column API - Quick Reference
-1️⃣ Create Column
+
+## 1.Create Column
 
 POST api/columns
 
 Body Example:
-
+```json
 {
   "name": "To Do",
   "boardId": 1
 }
-
-
+```
 Required Fields:
+| Field     | Type    | Required | Description                           |
+| --------- | ------- | -------- | ------------------------------------- |
+| name      | string  | ✅        | Name of the column                    |
+| boardId | integer | ✅        | ID of the board the column belongs to |
 
-name (string)
 
-board_id (integer)
-
-2️⃣ Update Column
+## 2.Update Column
 
 PATCH api/columns/:columnId
 
 Path Parameter:
 
-Name	Type	Required	Description
-id	integer	✅	ID of the column to update
-
 Body Example:
-
+```json
 {
   "name": "In Progress"
 }
+```
+Required Fields:
+| Name | Type    | Required | Description                |
+| ---- | ------- | -------- | -------------------------- |
+| id   | integer | ✅        | ID of the column to update |
 
 
-Optional Fields:
-
-name (string)
